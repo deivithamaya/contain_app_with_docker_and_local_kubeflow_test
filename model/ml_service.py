@@ -8,6 +8,7 @@ import settings
 from tensorflow.keras.applications import ResNet50
 from tensorflow.keras.applications.resnet50 import decode_predictions, preprocess_input
 from tensorflow.keras.preprocessing import image
+from threading import Thread
 
 # TODO
 # Connect to Redis and assign to variable `db``
@@ -58,6 +59,25 @@ def predict(image_name):
         print("there is no class in the image")
         return class_name, pred_probability
 
+def predict_and_store(image_name):
+    class_name, pred_probability = predict(image_name)
+    if class_name != None && pred_probability != None:
+        db.lpush(setting.REDIS_QUEUE, f'{"prediction":{class_name}, "score":{pred_probability}')
+    else:
+        print("error in inference")
+
+
+def get_job_from_redis():
+    resul = db.brpop(keys=[setting.REDIS_QUEUE], timeout=10)
+    if resul != None:
+        image_name = json.load(resul).["name"]
+        Thread(targat='predict_and_store', args=image_name).start()
+        get_job_from_redis()
+    else:
+        print("there is no job in redis")
+        get_job_from_redis()
+
+    time.sleep(setting.SERVER_SLEEP)
 
 def classify_process():
     """
@@ -70,7 +90,12 @@ def classify_process():
     Load image from the corresponding folder based on the image name
     received, then, run our ML model to get predictions.
     """
-    while True:
+    try:
+        thread_classify_process = Thread(target='get_job_from_redis')
+        thread_classify_process.start()
+    except Exception as e:
+        print("a exception has ocurred")
+        print(e)
         # Inside this loop you should add the code to:
         #   1. Take a new job from Redis
         #   2. Run your ML model on the given data
@@ -85,10 +110,10 @@ def classify_process():
         # Hint: You should be able to successfully implement the communication
         #       code with Redis making use of functions `brpop()` and `set()`.
         # TODO
-        raise NotImplementedError
+        #raise NotImplementedError
 
         # Sleep for a bit
-        time.sleep(settings.SERVER_SLEEP)
+        #time.sleep(settings.SERVER_SLEEP)
 
 
 if __name__ == "__main__":
