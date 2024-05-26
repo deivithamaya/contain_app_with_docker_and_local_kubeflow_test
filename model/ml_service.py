@@ -51,10 +51,12 @@ def predict(image_name):
 
     predis = model.predict(x_batch)
     tuple_results = resnet50.decode_predictions(predis, top=1)
-    class_name = tuple_results[1]
-    pred_probability = tuple_results[2]
-    
-    return class_name, pred_probability
+    if tuple_results.length != 0:
+        class_name = tuple_results[1]
+        pred_probability = tuple_results[2]
+    else:
+        print("there is no class in the image")
+        return class_name, pred_probability
 
 
 def classify_process():
