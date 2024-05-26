@@ -61,7 +61,7 @@ def predict(image_name):
 
 def predict_and_store(image_name):
     class_name, pred_probability = predict(image_name)
-    if class_name != None && pred_probability != None:
+    if class_name is not None && pred_probability is not None:
         db.lpush(setting.REDIS_QUEUE, f'{"prediction":{class_name}, "score":{pred_probability}')
     else:
         print("error in inference")
@@ -69,7 +69,7 @@ def predict_and_store(image_name):
 
 def get_job_from_redis():
     resul = db.brpop(keys=[setting.REDIS_QUEUE], timeout=10)
-    if resul != None:
+    if resul is not None:
         image_name = json.load(resul).["name"]
         Thread(targat='predict_and_store', args=image_name).start()
         get_job_from_redis()
