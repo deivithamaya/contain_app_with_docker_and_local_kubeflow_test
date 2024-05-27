@@ -146,12 +146,19 @@ def feedback():
         - "score" model confidence score for the predicted class as float.
     """
     report = request.form.get("report")
-
+    print("entre feedback")
     # Store the reported data to a file on the corresponding path
     # already provided in settings.py module (settings.FEEDBACK_FILEPATH)
     # TODO
     if report:
-        raise NotImplementedError
+        if "reported.txt" in os.listdir("./feedback"):
+            with open("./feedback/reported.txt", "wb") as file:
+                file.write("escribindo \n")
+                
+        else:
+            with open("./feedback/reported.txt", "x") as file:
+                file.write(text("creado"))
+
 
     # Don't change this line
     return render_template("index.html")
