@@ -5,12 +5,12 @@ ARG GID
 ARG PASSR
 ARG PASSA
 
-RUN echo 'root:'${PASSR} | chpasswd
-RUN apt-get -y update && apt install -y neovim 
-# Add a non-root user
-RUN addgroup --gid $GID app
-RUN adduser --disabled-login --geco '' --uid $UID --gid $GID app
-RUN echo 'app:'${PASSA} | chpasswd
+#RUN echo 'root:'${PASSR} | chpasswd
+#RUN apt-get -y update && apt install -y neovim 
+## Add a non-root user
+#RUN addgroup --gid $GID app
+#RUN adduser --disabled-login --geco '' --uid $UID --gid $GID app
+#RUN echo 'app:'${PASSA} | chpasswd
 
 # Append /home/app/.local/bin/ to PATH variable because
 # gunicorn is installed there.
@@ -29,6 +29,7 @@ COPY ./ /src/
 WORKDIR /src
 
 FROM base as test
+user root
 RUN ["pytest", "-v", "/src/tests"]
 
 FROM base as dev

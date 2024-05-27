@@ -45,7 +45,7 @@ def predict(image_name):
     print('in predict')
     class_name = None
     pred_probability = None
-    image_name = './uploads/' + image_name 
+    #image_name = './uploads/' + image_name 
     img = image.load_img(image_name, target_size=(224, 224))
     x = image.img_to_array(img)
     x_batch = np.expand_dims(x, axis=0)
@@ -58,9 +58,11 @@ def predict(image_name):
         tuple_results = tuple_results[0][0]
         class_name = tuple_results[1]
         pred_probability = tuple_results[2]
+        pred_probability = round(pred_probability, 4)
     else:
         print("there is no class in the image")
 
+    print(f'pred = {type(pred_probability)}')
     return class_name, pred_probability
 
 def predict_and_store(image_name, id_image):
@@ -78,7 +80,7 @@ def get_job_from_redis():
     if resul is not None:
         print(resul)
         resul = json.loads(resul[1].decode('utf-8'))
-        image_name = resul['image_name']
+        image_name = './uploads/' + resul['image_name']
         id_image = resul['id']
         Thread(target=predict_and_store, args=(image_name, id_image)).start()
         get_job_from_redis()
@@ -106,26 +108,7 @@ def classify_process():
     except Exception as e:
         print("a exception has ocurred!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         print(e)
-        # Inside this loop you should add the code to:
-        #   1. Take a new job from Redis
-        #   2. Run your ML model on the given data
-        #   3. Store model prediction in a dict with the following shape:
-        #      {
-        #         "prediction": str,
-        #         "score": float,
-        #      }
-        #   4. Store the results on Redis using the original job ID as the key
-        #      so the API can match the results it gets to the original job
-        #      sent
-        # Hint: You should be able to successfully implement the communication
-        #       code with Redis making use of functions `brpop()` and `set()`.
-        # TODO
-        #raise NotImplementedError
-
-        # Sleep for a bit
-        #time.sleep(settings.SERVER_SLEEP)
-
-
+        
 if __name__ == "__main__":
     # Now launch process
     print("Launching ML service...")
