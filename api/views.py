@@ -13,6 +13,7 @@ from flask import (
     url_for,
 )
 from middleware import model_predict
+import json
 
 router = Blueprint("app_router", __name__, template_folder="templates")
 
@@ -146,18 +147,23 @@ def feedback():
         - "score" model confidence score for the predicted class as float.
     """
     report = request.form.get("report")
+    report = report.replace("\'", "\"")
+    print(f'reposrte = {report}')
+    print(f'reposrte = {report[5]}')
+    print(f'reposrte = {type(report)}')
+    report = json.loads(report)
     print("entre feedback")
     # Store the reported data to a file on the corresponding path
     # already provided in settings.py module (settings.FEEDBACK_FILEPATH)
     # TODO
     if report:
-        if "reported.txt" in os.listdir("./feedback"):
-            with open("./feedback/reported.txt", "wb") as file:
-                file.write("escribindo \n")
+        if os.path.exists(settings.FEEDBACK_FILEPATH):
+            with open(settings.FEEDBACK_FILEPATH, "w") as file:
+                file.write(f' filename = {report["filename"]}, prediction = {report["prediction"]}, score = {report["score"]}')
                 
         else:
-            with open("./feedback/reported.txt", "x") as file:
-                file.write(text("creado"))
+            with open(settings.FEEDBACK_FILEPATH, "x") as file:
+                print("file for feedback created")
 
 
     # Don't change this line
