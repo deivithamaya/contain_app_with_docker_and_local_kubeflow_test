@@ -147,23 +147,25 @@ def feedback():
         - "score" model confidence score for the predicted class as float.
     """
     report = request.form.get("report")
-    report = report.replace("\'", "\"")
-    print(f'reposrte = {report}')
-    print(f'reposrte = {report[5]}')
-    print(f'reposrte = {type(report)}')
-    report = json.loads(report)
-    print("entre feedback")
-    # Store the reported data to a file on the corresponding path
+        # Store the reported data to a file on the corresponding path
     # already provided in settings.py module (settings.FEEDBACK_FILEPATH)
     # TODO
     if report:
+        """
+        report = report.replace("\'", "\"")
+        report = report.replace(". ", ".0")
+        report = json.loads(report)
+        """
         if os.path.exists(settings.FEEDBACK_FILEPATH):
             with open(settings.FEEDBACK_FILEPATH, "w") as file:
-                file.write(f' filename = {report["filename"]}, prediction = {report["prediction"]}, score = {report["score"]}')
+                #file.write(f' filename = {report["filename"]}, prediction = {report["prediction"]}, score = {report["score"]}')
+                file.write(report)
                 
         else:
             with open(settings.FEEDBACK_FILEPATH, "x") as file:
                 print("file for feedback created")
+                #file.write(f' filename = {report["filename"]}, prediction = {report["prediction"]}, score = {report["score"]}')
+                file.write(report)
 
 
     # Don't change this line
