@@ -5,18 +5,18 @@ import time
 import numpy as np
 import redis
 import settings
-from tensorflow.keras.applications import ResNet50
+from tensorflow.keras.applications import resnet50
 from tensorflow.keras.applications.resnet50 import decode_predictions, preprocess_input
 from tensorflow.keras.preprocessing import image
 from threading import Thread
+from my_thread_class import my_custom_thread
 
 # TODO
 # Connect to Redis and assign to variable `db``
 # Make use of settings.py module to get Redis settings like host, port, etc.
 db = redis.Redis(
-        host=settings.REDIS_IP,
-        post=settings.REDIS_PORT
-        decode_responses=True
+        host='172.18.0.2',
+        port=settings.REDIS_PORT,
         )
 
 # TODO
@@ -42,42 +42,51 @@ def predict(image_name):
         Model predicted class as a string and the corresponding confidence
         score as a number.
     """
+    print('in predict')
     class_name = None
     pred_probability = None
-    
-    img = image.load_img(name, target_size=(224, 224))
-    x = img.img_to_array(img)
+    image_name = './uploads/' + image_name 
+    img = image.load_img(image_name, target_size=(224, 224))
+    x = image.img_to_array(img)
     x_batch = np.expand_dims(x, axis=0)
     x_batch = resnet50.preprocess_input(x_batch)
 
     predis = model.predict(x_batch)
     tuple_results = resnet50.decode_predictions(predis, top=1)
-    if tuple_results.length != 0:
+    if len(tuple_results) != 0:
+        print(f'tupleeeeee {tuple_results}')
+        tuple_results = tuple_results[0][0]
         class_name = tuple_results[1]
         pred_probability = tuple_results[2]
     else:
         print("there is no class in the image")
-        return class_name, pred_probability
 
-def predict_and_store(image_name):
+    return class_name, pred_probability
+
+def predict_and_store(image_name, id_image):
+    print('in predict and store')
     class_name, pred_probability = predict(image_name)
-    if class_name is not None && pred_probability is not None:
-        db.lpush(setting.REDIS_QUEUE, f'{"prediction":{class_name}, "score":{pred_probability}')
+    if class_name is not None and pred_probability is not None:
+        db.lpush(id_image, json.dumps({"prediction":str(class_name), "score":str(pred_probability)}))
     else:
         print("error in inference")
 
 
 def get_job_from_redis():
-    resul = db.brpop(keys=[setting.REDIS_QUEUE], timeout=10)
+    print('in get_job_from redis')
+    resul = db.brpop(keys=[settings.REDIS_QUEUE], timeout=10)
     if resul is not None:
-        image_name = json.load(resul).["name"]
-        Thread(targat='predict_and_store', args=image_name).start()
+        print(resul)
+        resul = json.loads(resul[1].decode('utf-8'))
+        image_name = resul['image_name']
+        id_image = resul['id']
+        Thread(target=predict_and_store, args=(image_name, id_image)).start()
         get_job_from_redis()
     else:
         print("there is no job in redis")
         get_job_from_redis()
 
-    time.sleep(setting.SERVER_SLEEP)
+    time.sleep(settings.SERVER_SLEEP)
 
 def classify_process():
     """
@@ -90,11 +99,12 @@ def classify_process():
     Load image from the corresponding folder based on the image name
     received, then, run our ML model to get predictions.
     """
+    print('classsify_process')
     try:
-        thread_classify_process = Thread(target='get_job_from_redis')
+        thread_classify_process = Thread(target=get_job_from_redis)
         thread_classify_process.start()
     except Exception as e:
-        print("a exception has ocurred")
+        print("a exception has ocurred!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         print(e)
         # Inside this loop you should add the code to:
         #   1. Take a new job from Redis

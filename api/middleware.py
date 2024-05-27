@@ -10,9 +10,8 @@ import settings
 # Connect to Redis and assign to variable `db``
 # Make use of settings.py module to get Redis settings like host, port, etc.
 db = redis.Redis(
-        host=setting.REDIS_IP,
-        posrt=REDIS_PORT,
-        decode_responses=True
+        host='172.18.0.2',
+        port=settings.REDIS_PORT,
         )
 
 
@@ -48,24 +47,27 @@ def model_predict(image_name):
     #    "image_name": str,
     # }
     # TODO
-    job_data = { "id":str(job_id), "image_name":image_name}
+    job_data = json.dumps({ "id":str(job_id), "image_name":image_name})
 
     # Send the job to the model service using Redis
     # Hint: Using Redis `lpush()` function should be enough to accomplish this.
     # TODO
-    db.lpush(setting.REDIS_QUEUE, job_data)
+    db.lpush(settings.REDIS_QUEUE, str(job_data))
 
     # Loop until we received the response from our ML model
     while True:
         # Attempt to get model predictions using job_id
         # Hint: Investigate how can we get a value using a key from Redis
         # TODO
-        output = None
+        
+        id_image = json.loads(job_data)["id"]
+        output = db.brpop(id_image, timeout=5)
 
         # Check if the text was correctly processed by our ML model
         # Don't modify the code below, it should work as expected
         if output is not None:
-            output = json.loads(output.decode("utf-8"))
+            print(f' outputss = {output}')
+            output = json.loads(output[1].decode("utf-8"))
             prediction = output["prediction"]
             score = output["score"]
 
