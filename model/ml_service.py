@@ -44,7 +44,6 @@ def predict(image_name):
     """
     class_name = None
     pred_probability = None
-    #image_name = './uploads/' + image_name 
     img = image.load_img(image_name, target_size=(224, 224))
     x = image.img_to_array(img)
     x_batch = np.expand_dims(x, axis=0)
@@ -65,7 +64,7 @@ def predict(image_name):
 def predict_and_store(image_name, id_image):
     class_name, pred_probability = predict(image_name)
     if class_name is not None and pred_probability is not None:
-        db.lpush(id_image, json.dumps({"prediction":str(class_name), "score":str(pred_probability)}))
+        db.lpush(id_image, json.dumps({"prediction":class_name, "score":float(pred_probability)}))
     else:
         print("error in inference")
 
