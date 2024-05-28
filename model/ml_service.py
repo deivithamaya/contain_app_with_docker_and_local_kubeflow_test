@@ -42,7 +42,6 @@ def predict(image_name):
         Model predicted class as a string and the corresponding confidence
         score as a number.
     """
-    print('in predict')
     class_name = None
     pred_probability = None
     #image_name = './uploads/' + image_name 
@@ -54,7 +53,6 @@ def predict(image_name):
     predis = model.predict(x_batch)
     tuple_results = resnet50.decode_predictions(predis, top=1)
     if len(tuple_results) != 0:
-        print(f'tupleeeeee {tuple_results}')
         tuple_results = tuple_results[0][0]
         class_name = tuple_results[1]
         pred_probability = tuple_results[2]
@@ -62,11 +60,9 @@ def predict(image_name):
     else:
         print("there is no class in the image")
 
-    print(f'pred = {type(pred_probability)}')
     return class_name, pred_probability
 
 def predict_and_store(image_name, id_image):
-    print('in predict and store')
     class_name, pred_probability = predict(image_name)
     if class_name is not None and pred_probability is not None:
         db.lpush(id_image, json.dumps({"prediction":str(class_name), "score":str(pred_probability)}))
@@ -75,7 +71,6 @@ def predict_and_store(image_name, id_image):
 
 
 def get_job_from_redis():
-    print('in get_job_from redis')
     resul = db.brpop(keys=[settings.REDIS_QUEUE], timeout=10)
     if resul is not None:
         print(resul)

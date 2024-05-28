@@ -38,6 +38,7 @@ def index():
 
         # File received but no filename is provided, show basic UI
         file = request.files["file"]
+        print(f"this is a file {file}")
         if file.filename == "":
             flash("No image selected for uploading")
             return redirect(request.url)
@@ -109,9 +110,10 @@ def predict():
     # If user sends an invalid request (e.g. no file provided) this endpoint
     # should return `rpse` dict with default values HTTP 400 Bad Request code
     rpse = {"success": False, "prediction": None, "score": None}
-
+    
     if "file" in request.files and utils.allowed_file(request.files["file"].filename):
         file = request.files["file"]
+        print(f"this is a file {file}")
         file_hash = utils.get_file_hash(file)
         dst_filepath = os.path.join(current_app.config["UPLOAD_FOLDER"], file_hash)
         if not os.path.exists(dst_filepath):
