@@ -3,11 +3,14 @@ services:
   api:
     user: ${UID}:${GID}
     image: flask_api
+    stdin_open: True
     container_name: ml_api
     build:
       args:
         - UID=${UID}
         - GID=${GID}
+        - PASSR=${PASSR}
+        - PASSA=${PASSA}
       context: ./api
       target: build
     ports:
@@ -33,6 +36,8 @@ services:
       args:
         - UID=${UID}
         - GID=${GID}
+        - PASSR=${PASSR}
+        - PASSA=${PASSA}
       context: ./model
       target: build
     depends_on:
