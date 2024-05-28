@@ -1,4 +1,4 @@
-# Sprint project 03
+# Implement docker with a machine learning app, also, a first approach to kubeflow
 > Flask ML API
 
 ## The Business problem
